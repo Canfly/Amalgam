@@ -1,0 +1,10 @@
+# prototype
+# Canfly © 2018
+
+view object
+
+in:
+	auth, guid
+
+out:
+	json

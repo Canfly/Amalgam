@@ -1,0 +1,10 @@
+# prototype
+# Canfly © 2018
+
+create object
+
+in:
+	auth
+
+out:
+	post-name
