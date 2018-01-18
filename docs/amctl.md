@@ -5,13 +5,6 @@
 
 [Amalgam Repo](https://github.com/Canfly/Amalgam) • [Gitter](http://gitter.im/Canfly/Amalgam)
 
-
-[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-[![GoDoc](https://godoc.org/github.com/ipfs/go-ipfs?status.svg)](https://godoc.org/github.com/ipfs/go-ipfs)
-[![Build Status](https://travis-ci.org/ipfs/go-ipfs.svg?branch=master)](https://travis-ci.org/ipfs/go-ipfs)
-
-[![Throughput Graph](https://graphs.waffle.io/ipfs/go-ipfs/throughput.svg)](https://waffle.io/ipfs/go-ipfs/metrics/throughput)
-
 > Amalgam Command Line Tools
 
 Amalgam is a Peer-To-Peer Social Network and Media Ecosystem. 
@@ -19,7 +12,7 @@ Amalgam is a Peer-To-Peer Social Network and Media Ecosystem.
 ## Usage
 
 ```
-  amctl - Global p2p merkle-dag filesystem.
+  amctl - .
 
   amctl [<flags>] <command> [<arg>] ...
 
