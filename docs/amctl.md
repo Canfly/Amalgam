@@ -1,18 +1,15 @@
 # amctl
 
-[![](https://img.shields.io/badge/Powered%20by-Canfly%20LLP-blue.svg?style=flat-square)](https://canfly.org)
-[![](https://img.shields.io/badge/Project-Amalgam-blue.svg?style=flat-square)](http://amal.ga)
-
-[Amalgam Repo](https://github.com/Canfly/Amalgam) • [Gitter](http://gitter.im/Canfly/Amalgam)
-
 > Amalgam Command Line Tools
 
-Amalgam is a Peer-To-Peer Social Network and Media Ecosystem. 
+For more information see: https://github.com/Canfly/Amalgam
+
+Amalgam is the Media dimension for Interactive interactions 
 
 ## Usage
 
 ```
-  amctl - .
+  amctl - Amalgam Command Line Tools.
 
   amctl [<flags>] <command> [<arg>] ...
 
