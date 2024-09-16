@@ -1,6 +1,10 @@
 # Amalgam: The Media Dimension for Interactive Interaction 🚀
 
 ![Amalgam Banner](https://i.imgur.com/8q3iM0y.png)
+[![Join the chat at https://gitter.im/Canfly/Amalgam](https://badges.gitter.im/Canfly/Amalgam.svg)](https://gitter.im/Canfly/Amalgam?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+> A peer-to-peer social network and hypermedia ecosystem
+
 
 Amalgam - это блокчейн-платформа с интеграцией GPT-4, которая стремится стать медиа-пространством для интерактивного взаимодействия. Наш проект находится на этапе переосмысления и активной разработки. С помощью технологии блокчейна и нейросетей GPT-4 мы создаем децентрализованную социальную сеть для поиска единомышленников и решения задач на основе малых групп.
 
