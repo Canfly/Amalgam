@@ -12,6 +12,22 @@ from api.routes import router
 
 blockchain = Blockchain()
 
+# Создаем экземпляр шаблонизатора до создания FastAPI приложения
+templates = Jinja2Templates(directory=Path(__file__).parent.parent / "explorer" / "templates")
+
+# Регистрируем фильтры сразу
+def datetime_filter(timestamp):
+    if isinstance(timestamp, (int, float)):
+        dt = datetime.fromtimestamp(timestamp)
+        return dt.strftime("%d.%m.%Y %H:%M:%S")
+    return timestamp
+
+def json_filter(obj, **kwargs):
+    return json.dumps(obj, ensure_ascii=False, **kwargs)
+
+templates.env.filters["datetime"] = datetime_filter
+templates.env.filters["tojson"] = json_filter
+
 app = FastAPI(
     title="Canfly Amalgam",
     description="API для взаимодействия с Amalgam",
@@ -19,24 +35,15 @@ app = FastAPI(
 )
 
 app.include_router(router, prefix="/api")
-
-templates = Jinja2Templates(directory=Path(__file__).parent.parent / "explorer" / "templates")
 app.mount("/static", StaticFiles(directory=Path(__file__).parent.parent / "explorer" / "static"), name="static")
 
+# Убираем регистрацию фильтров из startup_event
 @app.on_event("startup")
 async def startup_event():
-    def datetime_filter(timestamp):
-        if isinstance(timestamp, (int, float)):
-            dt = datetime.fromtimestamp(timestamp)
-            return dt.strftime("%d.%m.%Y %H:%M:%S")
-        return timestamp
+    pass
 
-    def json_filter(obj, **kwargs):
-        return json.dumps(obj, ensure_ascii=False, **kwargs)
+# ...остальной код остается без изменений...
 
-    templates.env.filters["datetime"] = datetime_filter
-    templates.env.filters["tojson"] = json_filter
-    
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     chain_data = blockchain.get_chain()
