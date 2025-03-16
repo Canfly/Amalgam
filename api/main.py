@@ -1,70 +1,116 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+from typing import List, Dict
 import uvicorn
-from pathlib import Path
-from datetime import datetime
-import json
 
-from blockchain.chain import Blockchain
-from api.routes import router
+app = FastAPI(title="Amalgam Blockchain Explorer")
+templates = Jinja2Templates(directory="templates")
 
-blockchain = Blockchain()
+# Модель данных для транзакций
+class Transaction(BaseModel):
+    tx_id: str
+    from_addr: str
+    to_addr: str
+    arc_value: float
+    details: str
+    timestamp: str
+    signatures: List[str]
 
-# Создаем экземпляр шаблонизатора до создания FastAPI приложения
-templates = Jinja2Templates(directory=Path(__file__).parent.parent / "explorer" / "templates")
+# Модель данных для контента
+class Content(BaseModel):
+    content_id: str
+    author: str
+    type: str
+    content_hash: str
+    target: str
+    weight: int
+    timestamp: str
 
-# Регистрируем фильтры сразу
-def datetime_filter(timestamp):
-    if isinstance(timestamp, (int, float)):
-        dt = datetime.fromtimestamp(timestamp)
-        return dt.strftime("%d.%m.%Y %H:%M:%S")
-    return timestamp
+# Модель данных для пользователя
+class User(BaseModel):
+    address: str
+    arc: float
+    hrc: float
+    transactions: List[str]
+    role: str
 
-def json_filter(obj, **kwargs):
-    return json.dumps(obj, ensure_ascii=False, **kwargs)
+# Симуляция блокчейна
+blockchain: Dict[str, List] = {"users": [], "transactions": [], "content": []}
 
-templates.env.filters["datetime"] = datetime_filter
-templates.env.filters["tojson"] = json_filter
+# Инициализация данных
+def init_blockchain():
+    users = [
+        User(address="0xSIDR123", arc=302.2, hrc=10, transactions=[], role="cider_factory"),
+        User(address="0xGARDENER456", arc=259, hrc=0, transactions=[], role="gardener"),
+        User(address="0xSEEDSELLER123", arc=95, hrc=10, transactions=[], role="seed_seller"),
+        User(address="0xBOTTLE789", arc=150, hrc=0, transactions=[], role="bottle_seller"),
+        User(address="0xDESIGN901", arc=50, hrc=0, transactions=[], role="designer"),
+        User(address="0xRESIDENT111", arc=47.8, hrc=0, transactions=[], role="resident"),
+        User(address="0xBLOGGER789", arc=40, hrc=0, transactions=[], role="blogger"),
+    ]
 
-app = FastAPI(
-    title="Canfly Amalgam",
-    description="API для взаимодействия с Amalgam",
-    version="0.11.1"
-)
+    transactions = [
+        Transaction(tx_id="TX1234", from_addr="0xGARDENER456", to_addr="0xSIDR123", arc_value=320, details="800 kg apples at 0.4 ARC/kg, negotiated", timestamp="2025-03-16T12:00:00Z", signatures=["sig_gardener", "sig_sidr"]),
+        Transaction(tx_id="TX5678", from_addr="0xBOTTLE789", to_addr="0xSIDR123", arc_value=100, details="200 bottles at 0.5 ARC/bottle", timestamp="2025-03-16T13:00:00Z", signatures=["sig_bottle", "sig_sidr"]),
+        Transaction(tx_id="TX9012", from_addr="0xDESIGN901", to_addr="0xSIDR123", arc_value=50, details="label design, 5 hours", timestamp="2025-03-16T14:00:00Z", signatures=["sig_design", "sig_sidr"]),
+        Transaction(tx_id="TX9999", from_addr="0xRESIDENT111", to_addr="0xSIDR123", arc_value=2.2, details="1 liter cider, negotiated from 2.5 ARC", timestamp="2025-03-16T15:00:00Z", signatures=["sig_resident", "sig_sidr"]),
+        Transaction(tx_id="TX4321", from_addr="0xGARDENER456", to_addr="0xSEEDSELLER123", arc_value=50, details="50 seedlings purchased", timestamp="2025-03-15T10:00:00Z", signatures=["sig_gardener", "sig_seedseller"]),
+        Transaction(tx_id="TX8765", from_addr="0xGARDENER456", to_addr="0xSEEDSELLER123", arc_value=5, details="Thanks for quality seedlings", timestamp="2025-03-17T12:00:00Z", signatures=["sig_gardener", "sig_seedseller"]),
+    ]
 
-app.include_router(router, prefix="/api")
-app.mount("/static", StaticFiles(directory=Path(__file__).parent.parent / "explorer" / "static"), name="static")
+    content = [
+        Content(content_id="CONTENT5678", author="0xBLOGGER789", type="article", content_hash="ipfs://QmFakeNews123", target="0xSEEDSELLER123", weight=-6, timestamp="2025-03-16T10:00:00Z")
+    ]
 
-# Убираем регистрацию фильтров из startup_event
-@app.on_event("startup")
-async def startup_event():
-    pass
+    for tx in transactions:
+        for user in users:
+            if user.address in [tx.from_addr, tx.to_addr]:
+                user.transactions.append(tx.tx_id)
 
-# ...остальной код остается без изменений...
+    blockchain["users"] = [u.dict() for u in users]
+    blockchain["transactions"] = [t.dict() for t in transactions]
+    blockchain["content"] = [c.dict() for c in content]
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    chain_data = blockchain.get_chain()
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "chain": chain_data, "chain_length": len(chain_data)}
-    )
+init_blockchain()
 
-@app.get("/block/{block_index}", response_class=HTMLResponse)
-async def get_block_page(request: Request, block_index: int):
-    chain = blockchain.get_chain()
-    if 0 <= block_index < len(chain):
-        block = chain[block_index]
-        return templates.TemplateResponse(
-            "block.html",
-            {"request": request, "block": block, "block_index": block_index}
-        )
-    return templates.TemplateResponse(
-        "error.html",
-        {"request": request, "message": "Блок не найден"}
-    )
+# Главная страница с адресом сидр-завода
+@app.get("/address/{address}")
+async def get_address(request: Request, address: str):
+    if address != "0xSIDR123":
+        return templates.TemplateResponse("error.html", {"request": request, "message": "Address not found"})
+
+    cider_factory = next(u for u in blockchain["users"] if u["address"] == "0xSIDR123")
+    incoming_txs = [tx for tx in blockchain["transactions"] if tx["to_addr"] == "0xSIDR123"]
+    outgoing_txs = [tx for tx in blockchain["transactions"] if tx["from_addr"] == "0xSIDR123"]
+    related_content = [c for c in blockchain["content"] if c["target"] == "0xSIDR123" or c["author"] == "0xSIDR123"]
+
+    supply_chain = {
+        "apples": {"supplier": "0xGARDENER456", "quantity": "800 kg", "arc_cost": 320, "details": "Negotiated at 0.4 ARC/kg"},
+        "bottles": {"supplier": "0xBOTTLE789", "quantity": "200 bottles", "arc_cost": 100, "details": "0.5 ARC/bottle"},
+        "design": {"supplier": "0xDESIGN901", "service": "Label design", "arc_cost": 50, "details": "5 hours work"}
+    }
+    sales = {"resident": {"buyer": "0xRESIDENT111", "quantity": "1 liter", "arc_received": 2.2, "details": "Negotiated from 2.5 ARC"}}
+    neural_insights = {
+        "demand_trend": "High demand for cider (+30% transactions last week)",
+        "diversity_factor": 20,
+        "anomaly_check": "No suspicious patterns detected",
+        "recommendation": "Consider producing pear cider, demand up by 15%"
+    }
+
+    return templates.TemplateResponse("address.html", {
+        "request": request,
+        "address": cider_factory["address"],
+        "arc": cider_factory["arc"],
+        "hrc": cider_factory["hrc"],
+        "role": cider_factory["role"],
+        "supply_chain": supply_chain,
+        "sales": sales,
+        "incoming_txs": incoming_txs,
+        "outgoing_txs": outgoing_txs,
+        "content": related_content,
+        "neural_insights": neural_insights
+    })
 
 if __name__ == "__main__":
-    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
