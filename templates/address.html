@@ -4,78 +4,180 @@
     <meta charset="UTF-8">
     <title>Amalgam Explorer - {{ address }}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        .section { margin: 20px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #1e3a8a;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #ffffff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 600;
+        }
+        td a {
+            color: #1d4ed8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        td a:hover {
+            text-decoration: underline;
+        }
+        .insight {
+            background: #eff6ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #1e40af;
+        }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Address: {{ address }}</h1>
-    
-    <div class="section">
-        <h2>Overview</h2>
-        <p><strong>Role:</strong> {{ role }}</p>
-        <p><strong>ARC Balance:</strong> {{ arc }} ARC</p>
-        <p><strong>HRC Balance:</strong> {{ hrc }} HRC</p>
-    </div>
+    <div class="container">
+        <h1>Address: <a href="/address/{{ address }}" style="color: #1e3a8a;">{{ address }}</a></h1>
 
-    <div class="section">
-        <h2>Supply Chain</h2>
-        <table>
-            <tr><th>Item/Service</th><th>Supplier</th><th>Quantity</th><th>ARC Cost</th><th>Details</th></tr>
-            <tr><td>Apples</td><td>{{ supply_chain.apples.supplier }}</td><td>{{ supply_chain.apples.quantity }}</td><td>{{ supply_chain.apples.arc_cost }}</td><td>{{ supply_chain.apples.details }}</td></tr>
-            <tr><td>Bottles</td><td>{{ supply_chain.bottles.supplier }}</td><td>{{ supply_chain.bottles.quantity }}</td><td>{{ supply_chain.bottles.arc_cost }}</td><td>{{ supply_chain.bottles.details }}</td></tr>
-            <tr><td>Design</td><td>{{ supply_chain.design.supplier }}</td><td>-</td><td>{{ supply_chain.design.arc_cost }}</td><td>{{ supply_chain.design.details }}</td></tr>
-        </table>
-    </div>
+        <div class="section">
+            <h2>Overview</h2>
+            <p><strong>Role:</strong> {{ role }}</p>
+            <p><strong>ARC Balance:</strong> {{ '{:.2f}'.format(arc) }} ARC</p>
+            <p><strong>HRC Balance:</strong> {{ '{:.2f}'.format(hrc) }} HRC</p>
+            <a href="/" class="btn">Back to Explorer</a>
+        </div>
 
-    <div class="section">
-        <h2>Sales</h2>
-        <table>
-            <tr><th>Buyer</th><th>Quantity</th><th>ARC Received</th><th>Details</th></tr>
-            <tr><td>{{ sales.resident.buyer }}</td><td>{{ sales.resident.quantity }}</td><td>{{ sales.resident.arc_received }}</td><td>{{ sales.resident.details }}</td></tr>
-        </table>
-    </div>
+        <div class="section">
+            <h2>Supply Chain</h2>
+            <table>
+                <tr><th>Item/Service</th><th>Supplier</th><th>Quantity</th><th>ARC Cost</th><th>Details</th></tr>
+                {% for item, data in supply_chain.items() %}
+                <tr>
+                    <td>{{ item|capitalize }}</td>
+                    <td><a href="/address/{{ data.supplier }}">{{ data.supplier }}</a></td>
+                    <td>{{ data.quantity }}</td>
+                    <td>{{ data.arc_cost }}</td>
+                    <td>{{ data.details }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
 
-    <div class="section">
-        <h2>Incoming Transactions</h2>
-        <table>
-            <tr><th>Tx ID</th><th>From</th><th>ARC</th><th>Details</th><th>Timestamp</th></tr>
-            {% for tx in incoming_txs %}
-            <tr><td>{{ tx.tx_id }}</td><td>{{ tx.from_addr }}</td><td>{{ tx.arc_value }}</td><td>{{ tx.details }}</td><td>{{ tx.timestamp }}</td></tr>
-            {% endfor %}
-        </table>
-    </div>
+        <div class="section">
+            <h2>Sales</h2>
+            <table>
+                <tr><th>Buyer</th><th>Quantity</th><th>ARC Received</th><th>Details</th></tr>
+                {% for buyer, data in sales.items() %}
+                <tr>
+                    <td><a href="/address/{{ data.buyer }}">{{ data.buyer }}</a></td>
+                    <td>{{ data.quantity }}</td>
+                    <td>{{ data.arc_received }}</td>
+                    <td>{{ data.details }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
 
-    <div class="section">
-        <h2>Outgoing Transactions</h2>
-        <table>
-            <tr><th>Tx ID</th><th>To</th><th>ARC</th><th>Details</th><th>Timestamp</th></tr>
-            {% for tx in outgoing_txs %}
-            <tr><td>{{ tx.tx_id }}</td><td>{{ tx.to_addr }}</td><td>{{ tx.arc_value }}</td><td>{{ tx.details }}</td><td>{{ tx.timestamp }}</td></tr>
-            {% endfor %}
-        </table>
-    </div>
+        <div class="section">
+            <h2>Incoming Transactions</h2>
+            <table>
+                <tr><th>Tx ID</th><th>From</th><th>ARC</th><th>Details</th><th>Timestamp</th></tr>
+                {% for tx in incoming_txs %}
+                <tr>
+                    <td>{{ tx.tx_id }}</td>
+                    <td><a href="/address/{{ tx.from_addr }}">{{ tx.from_addr }}</a></td>
+                    <td>{{ '{:.2f}'.format(tx.arc_value) }}</td>
+                    <td>{{ tx.details }}</td>
+                    <td>{{ tx.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
 
-    <div class="section">
-        <h2>Related Content</h2>
-        <table>
-            <tr><th>Content ID</th><th>Author</th><th>Type</th><th>Target</th><th>Weight</th><th>Timestamp</th></tr>
-            {% for c in content %}
-            <tr><td>{{ c.content_id }}</td><td>{{ c.author }}</td><td>{{ c.type }}</td><td>{{ c.target }}</td><td>{{ c.weight }}</td><td>{{ c.timestamp }}</td></tr>
-            {% endfor %}
-        </table>
-    </div>
+        <div class="section">
+            <h2>Outgoing Transactions</h2>
+            <table>
+                <tr><th>Tx ID</th><th>To</th><th>ARC</th><th>Details</th><th>Timestamp</th></tr>
+                {% for tx in outgoing_txs %}
+                <tr>
+                    <td>{{ tx.tx_id }}</td>
+                    <td><a href="/address/{{ tx.to_addr }}">{{ tx.to_addr }}</a></td>
+                    <td>{{ '{:.2f}'.format(tx.arc_value) }}</td>
+                    <td>{{ tx.details }}</td>
+                    <td>{{ tx.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
 
-    <div class="section">
-        <h2>Neural Insights</h2>
-        <p><strong>Demand Trend:</strong> {{ neural_insights.demand_trend }}</p>
-        <p><strong>Diversity Factor:</strong> {{ neural_insights.diversity_factor }}</p>
-        <p><strong>Anomaly Check:</strong> {{ neural_insights.anomaly_check }}</p>
-        <p><strong>Recommendation:</strong> {{ neural_insights.recommendation }}</p>
+        <div class="section">
+            <h2>Related Content</h2>
+            <table>
+                <tr><th>Content ID</th><th>Author</th><th>Type</th><th>Target</th><th>Weight</th><th>Timestamp</th></tr>
+                {% for c in content %}
+                <tr>
+                    <td>{{ c.content_id }}</td>
+                    <td><a href="/address/{{ c.author }}">{{ c.author }}</a></td>
+                    <td>{{ c.type }}</td>
+                    <td><a href="/address/{{ c.target }}">{{ c.target }}</a></td>
+                    <td>{{ c.weight }}</td>
+                    <td>{{ c.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Neural Insights</h2>
+            <div class="insight">
+                <p><strong>Demand Trend:</strong> {{ neural_insights.demand_trend }}</p>
+                <p><strong>Diversity Factor:</strong> {{ neural_insights.diversity_factor }}</p>
+                <p><strong>Anomaly Check:</strong> {{ neural_insights.anomaly_check }}</p>
+                <p><strong>Recommendation:</strong> {{ neural_insights.recommendation }}</p>
+            </div>
+        </div>
     </div>
 </body>
 </html>
